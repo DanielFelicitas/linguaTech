@@ -1,44 +1,88 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getReadingQuizzesRequest } from '../services/activityApi'
+import {
+  getMyReadingAttemptsRequest,
+  getReadingQuizzesRequest,
+  submitReadingQuizRequest,
+} from '../services/activityApi'
 
 function ReadingActivity() {
-  const [quiz, setQuiz] = useState(null)
-  const [readingAnswers, setReadingAnswers] = useState({})
-  const [readingResult, setReadingResult] = useState(null)
+  const [quizzes, setQuizzes] = useState([])
+  const [answersByQuiz, setAnswersByQuiz] = useState({})
+  const [attemptsByQuiz, setAttemptsByQuiz] = useState({})
+  const [submittingQuizId, setSubmittingQuizId] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
 
   const user = useMemo(() => JSON.parse(localStorage.getItem('linguatech_user') || 'null'), [])
   const isAdmin = user?.role === 'admin'
 
   useEffect(() => {
-    const loadQuiz = async () => {
+    const loadData = async () => {
       try {
-        const { data } = await getReadingQuizzesRequest()
-        const latestQuiz = data?.quizzes?.[0] || null
-        setQuiz(latestQuiz)
-        if (!latestQuiz) {
+        const [{ data: quizzesData }, { data: attemptsData }] = await Promise.all([
+          getReadingQuizzesRequest(),
+          getMyReadingAttemptsRequest(),
+        ])
+
+        const nextQuizzes = quizzesData?.quizzes || []
+        const attemptsMap = (attemptsData?.attempts || []).reduce((acc, attempt) => {
+          const key = String(attempt.quiz)
+          acc[key] = attempt
+          return acc
+        }, {})
+
+        setQuizzes(nextQuizzes)
+        setAttemptsByQuiz(attemptsMap)
+        if (!nextQuizzes.length) {
           setError('No reading quiz yet. Ask an admin to create one.')
         }
       } catch (apiError) {
-        setError(apiError.response?.data?.message || 'Failed to load reading quiz.')
+        setError(apiError.response?.data?.message || 'Failed to load reading quizzes.')
       } finally {
         setLoading(false)
       }
     }
 
-    loadQuiz()
+    loadData()
   }, [])
 
-  const checkReadingAnswers = () => {
-    if (!quiz) return
+  const updateAnswer = (quizId, questionIndex, value) => {
+    setAnswersByQuiz((prev) => ({
+      ...prev,
+      [quizId]: { ...(prev[quizId] || {}), [questionIndex]: value },
+    }))
+  }
 
-    const score = quiz.questions.reduce(
-      (sum, question, index) => sum + (readingAnswers[index] === question.correctOption ? 1 : 0),
-      0,
-    )
-    setReadingResult({ score, total: quiz.questions.length })
+  const submitQuiz = async (quiz) => {
+    const quizId = String(quiz._id || quiz.id)
+    if (attemptsByQuiz[quizId]) return
+
+    const selectedAnswers = answersByQuiz[quizId] || {}
+    const hasMissing = quiz.questions.some((_, index) => typeof selectedAnswers[index] !== 'number')
+    if (hasMissing) {
+      setMessage('Please answer all questions before submitting.')
+      return
+    }
+
+    try {
+      setSubmittingQuizId(quizId)
+      setMessage('')
+      const answers = quiz.questions.map((_, index) => selectedAnswers[index])
+      const { data } = await submitReadingQuizRequest(quizId, { answers })
+
+      setAttemptsByQuiz((prev) => ({ ...prev, [quizId]: data.attempt }))
+      setMessage(data.message || 'Quiz submitted successfully.')
+    } catch (apiError) {
+      const existingAttempt = apiError.response?.data?.attempt
+      if (existingAttempt) {
+        setAttemptsByQuiz((prev) => ({ ...prev, [quizId]: existingAttempt }))
+      }
+      setMessage(apiError.response?.data?.message || 'Failed to submit quiz.')
+    } finally {
+      setSubmittingQuizId('')
+    }
   }
 
   return (
@@ -60,44 +104,60 @@ function ReadingActivity() {
 
       <article className="rounded-2xl border border-[#dcefff] bg-white p-5">
         {loading ? (
-          <p className="text-sm text-[#6E7382]">Loading quiz...</p>
+          <p className="text-sm text-[#6E7382]">Loading quizzes...</p>
         ) : error ? (
           <p className="text-sm text-[#FF3D00]">{error}</p>
         ) : (
           <>
-        <div className="rounded-xl bg-[#F5F5F7] p-4">
-          <h3 className="mb-2 text-sm font-semibold text-[#2979FF]">{quiz?.title}</h3>
-          <p className="whitespace-pre-line text-sm text-[#1F2430]">{quiz?.article}</p>
-        </div>
+            <div className="space-y-5">
+              {quizzes.map((quiz) => {
+                const quizId = String(quiz._id || quiz.id)
+                const attempt = attemptsByQuiz[quizId]
+                const isTaken = Boolean(attempt)
 
-        <div className="mt-4 space-y-4">
-          {quiz?.questions?.map((question, index) => (
-            <QuestionBlock
-              key={`question-${index}`}
-              id={`q-${index}`}
-              question={`${index + 1}) ${question.question}`}
-              options={question.options.map((option, optionIndex) => ({
-                id: optionIndex,
-                label: option,
-              }))}
-              selected={readingAnswers[index]}
-              onSelect={(value) => setReadingAnswers((prev) => ({ ...prev, [index]: value }))}
-            />
-          ))}
-        </div>
+                return (
+                  <section key={quizId} className="rounded-xl border border-[#d8dbe7] p-4">
+                    <div className="rounded-xl bg-[#F5F5F7] p-4">
+                      <h3 className="mb-2 text-sm font-semibold text-[#2979FF]">{quiz.title}</h3>
+                      <p className="whitespace-pre-line text-sm text-[#1F2430]">{quiz.article}</p>
+                    </div>
 
-        <button
-          type="button"
-          onClick={checkReadingAnswers}
-          className="mt-4 rounded-xl bg-[#5A4DD5] px-4 py-2 text-sm font-semibold text-white"
-        >
-          Check Answers
-        </button>
-        {readingResult && (
-          <p className="mt-3 text-sm text-[#1F2430]">
-            Score: {readingResult.score}/{readingResult.total}
-          </p>
-        )}
+                    <div className="mt-4 space-y-4">
+                      {quiz.questions?.map((question, index) => (
+                        <QuestionBlock
+                          key={`${quizId}-${index}`}
+                          id={`${quizId}-q-${index}`}
+                          question={`${index + 1}) ${question.question}`}
+                          options={question.options.map((option, optionIndex) => ({
+                            id: optionIndex,
+                            label: option,
+                          }))}
+                          selected={answersByQuiz[quizId]?.[index]}
+                          disabled={isTaken}
+                          onSelect={(value) => updateAnswer(quizId, index, value)}
+                        />
+                      ))}
+                    </div>
+
+                    {isTaken ? (
+                      <p className="mt-4 text-sm font-semibold text-[#1F2430]">
+                        Your score: {attempt.score}/{attempt.total} (already submitted)
+                      </p>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => submitQuiz(quiz)}
+                        disabled={submittingQuizId === quizId}
+                        className="mt-4 rounded-xl bg-[#5A4DD5] px-4 py-2 text-sm font-semibold text-white disabled:opacity-70"
+                      >
+                        {submittingQuizId === quizId ? 'Submitting...' : 'Submit Quiz'}
+                      </button>
+                    )}
+                  </section>
+                )
+              })}
+            </div>
+            {message && <p className="mt-4 text-sm text-[#6E7382]">{message}</p>}
           </>
         )}
       </article>
@@ -107,7 +167,7 @@ function ReadingActivity() {
 
 export default ReadingActivity
 
-function QuestionBlock({ id, question, options, selected, onSelect }) {
+function QuestionBlock({ id, question, options, selected, onSelect, disabled = false }) {
   return (
     <div className="rounded-xl border border-[#e7e7ee] p-3">
       <p className="mb-2 text-sm font-semibold text-[#1F2430]">{question}</p>
@@ -119,6 +179,7 @@ function QuestionBlock({ id, question, options, selected, onSelect }) {
               name={id}
               value={option.id}
               checked={selected === option.id}
+              disabled={disabled}
               onChange={() => onSelect(option.id)}
             />
             {option.label}

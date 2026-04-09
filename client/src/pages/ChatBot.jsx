@@ -48,7 +48,7 @@ function ChatBot() {
       <div className="mb-4">
         <h1 className="text-3xl font-bold text-[#5A4DD5]">Chat tutor</h1>
         <p className="text-[#6E7382]">
-          Practice writing. Get grammar fixes and natural ways to say things (Hugging Face Inference Router).
+          Practice writing. Get grammar fixes and natural ways to say things.
         </p>
       </div>
 

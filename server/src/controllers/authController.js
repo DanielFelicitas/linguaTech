@@ -58,3 +58,32 @@ export const login = async (req, res) => {
     return res.status(500).json({ message: 'Server error while logging in.' })
   }
 }
+
+export const setUserRole = async (req, res) => {
+  try {
+    const { email, role } = req.body
+
+    if (!email || !role) {
+      return res.status(400).json({ message: 'Email and role are required.' })
+    }
+
+    if (!['student', 'admin'].includes(role)) {
+      return res.status(400).json({ message: 'Role must be student or admin.' })
+    }
+
+    const user = await User.findOne({ email })
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' })
+    }
+
+    user.role = role
+    await user.save()
+
+    return res.json({
+      message: `Role updated to ${role}.`,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+    })
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to update user role.' })
+  }
+}
