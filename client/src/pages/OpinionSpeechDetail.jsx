@@ -224,7 +224,7 @@ function OpinionSpeechDetail() {
             <p className="mt-1 text-sm text-[#1F2430]">
               Duration: {mySubmission.durationSeconds}s
             </p>
-            <p className="mt-2 text-sm font-semibold text-[#5A4DD5]">Teacher/Admin Feedback</p>
+            <p className="mt-2 text-sm font-semibold text-[#5A4DD5]">Teacher Feedback</p>
             <p className="mt-1 text-sm text-[#1F2430]">
               {mySubmission.feedback?.trim() || 'No feedback yet.'}
             </p>
