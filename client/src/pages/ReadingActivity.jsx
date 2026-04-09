@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   getMyReadingAttemptsRequest,
@@ -15,9 +15,6 @@ function ReadingActivity() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
-
-  const user = useMemo(() => JSON.parse(localStorage.getItem('linguatech_user') || 'null'), [])
-  const isAdmin = user?.role === 'admin'
 
   useEffect(() => {
     const loadData = async () => {
@@ -94,12 +91,6 @@ function ReadingActivity() {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="mb-1 text-3xl font-bold text-[#5A4DD5]">📖 Reading + Comprehension</h1>
-          <p className="text-[#6E7382]">Read the article and answer the comprehension questions.</p>
-          {isAdmin && (
-            <Link to="/admin/reading-quizzes" className="mt-2 inline-block text-sm font-semibold text-[#5A4DD5]">
-              + Create or manage quizzes
-            </Link>
-          )}
         </div>
         <Link to="/activities" className="rounded-xl border border-[#d8dbe7] bg-white px-4 py-2 text-sm font-semibold text-[#1F2430]">
           ← Back to Activities

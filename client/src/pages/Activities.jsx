@@ -16,15 +16,15 @@ function Activities() {
 
       <div className="grid gap-5 lg:grid-cols-3">
         <Link
-          to="/activities/speaking"
+          to="/activities/opinion-speech"
           className="group rounded-2xl border border-[#dcefff] bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-[#4ED0FF] hover:shadow-md sm:p-7"
         >
           <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-[#2979FF]">
             Activity 01
           </p>
-          <h2 className="mb-2 text-2xl font-bold text-[#5A4DD5]">Speaking Practice</h2>
+          <h2 className="mb-2 text-2xl font-bold text-[#5A4DD5]">🗣 Opinion Speech</h2>
           <p className="text-base text-[#6E7382]">
-            🎤 Speech-to-text and professional sentence feedback.
+            Choose a prompt card and answer it with a one-minute speech recording.
           </p>
           <div className="mt-5 inline-flex rounded-lg border border-[#4ED0FF] px-3 py-2 text-sm font-semibold text-[#0a2f40] transition group-hover:bg-[#eefbff]">
             Open Activity
@@ -48,15 +48,15 @@ function Activities() {
         </Link>
 
         <Link
-          to="/activities/opinion-speech"
+          to="/activities/speaking"
           className="group rounded-2xl border border-[#dcefff] bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-[#4ED0FF] hover:shadow-md sm:p-7"
         >
           <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-[#2979FF]">
             Activity 03
           </p>
-          <h2 className="mb-2 text-2xl font-bold text-[#5A4DD5]">🗣 Opinion Speech</h2>
+          <h2 className="mb-2 text-2xl font-bold text-[#5A4DD5]">Speaking Practice</h2>
           <p className="text-base text-[#6E7382]">
-            Choose a prompt card and answer it with a one-minute speech recording.
+            🎤 Speech-to-text and professional sentence feedback.
           </p>
           <div className="mt-5 inline-flex rounded-lg border border-[#4ED0FF] px-3 py-2 text-sm font-semibold text-[#0a2f40] transition group-hover:bg-[#eefbff]">
             Open Activity

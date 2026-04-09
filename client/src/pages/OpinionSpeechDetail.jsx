@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getOpinionPromptsRequest, submitOpinionAnswerRequest } from '../services/activityApi'
+import {
+  getMyOpinionSubmissionRequest,
+  getOpinionPromptsRequest,
+  submitOpinionAnswerRequest,
+} from '../services/activityApi'
 
 const defaultContent = {
   title: 'Digital Communication and Student Interaction',
@@ -20,6 +24,7 @@ function OpinionSpeechDetail() {
   const [transcript, setTranscript] = useState('')
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [mySubmission, setMySubmission] = useState(null)
 
   const recognitionRef = useRef(null)
   const timerRef = useRef(null)
@@ -44,6 +49,19 @@ function OpinionSpeechDetail() {
       }
     }
     loadPrompt()
+  }, [contentId])
+
+  useEffect(() => {
+    const loadMySubmission = async () => {
+      if (!contentId || contentId.startsWith('default-')) return
+      try {
+        const { data } = await getMyOpinionSubmissionRequest(contentId)
+        setMySubmission(data?.submission || null)
+      } catch {
+        setMySubmission(null)
+      }
+    }
+    loadMySubmission()
   }, [contentId])
 
   const stopTimer = () => {
@@ -136,8 +154,13 @@ function OpinionSpeechDetail() {
         answerText: transcript.trim(),
         durationSeconds: usedSeconds,
       })
+      setMySubmission(data?.submission || null)
       setMessage(data?.message || 'Opinion answer submitted successfully.')
     } catch (error) {
+      const existingSubmission = error.response?.data?.submission || null
+      if (existingSubmission) {
+        setMySubmission(existingSubmission)
+      }
       setMessage(error.response?.data?.message || 'Failed to submit opinion answer.')
     } finally {
       setIsSubmitting(false)
@@ -181,10 +204,10 @@ function OpinionSpeechDetail() {
           <button
             type="button"
             onClick={submitAnswer}
-            disabled={isListening || isSubmitting}
+            disabled={isListening || isSubmitting || Boolean(mySubmission)}
             className="rounded-xl bg-[#5A4DD5] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Answer'}
+            {isSubmitting ? 'Submitting...' : mySubmission ? 'Already Submitted' : 'Submit Answer'}
           </button>
         </div>
 
@@ -195,6 +218,18 @@ function OpinionSpeechDetail() {
           className="mt-4 w-full rounded-xl border border-[#d8dbe7] bg-white p-3 text-[#1F2430] outline-none focus:border-[#4ED0FF]"
           placeholder="Your one-minute answer will appear here..."
         />
+        {mySubmission && (
+          <div className="mt-4 rounded-xl border border-[#d8dbe7] bg-[#eefbff] p-3">
+            <p className="text-sm font-semibold text-[#2979FF]">Your Submission</p>
+            <p className="mt-1 text-sm text-[#1F2430]">
+              Duration: {mySubmission.durationSeconds}s
+            </p>
+            <p className="mt-2 text-sm font-semibold text-[#5A4DD5]">Teacher/Admin Feedback</p>
+            <p className="mt-1 text-sm text-[#1F2430]">
+              {mySubmission.feedback?.trim() || 'No feedback yet.'}
+            </p>
+          </div>
+        )}
         {message && <p className="mt-3 text-sm text-[#6E7382]">{message}</p>}
       </article>
     </section>

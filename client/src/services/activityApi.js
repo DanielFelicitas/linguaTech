@@ -49,6 +49,13 @@ export const getAdminReadingAttemptsRequest = () => {
   })
 }
 
+export const deleteReadingAttemptRequest = (attemptId) => {
+  const token = localStorage.getItem('linguatech_token')
+  return axios.delete(`${API_URL}/reading-attempts/${attemptId}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+}
+
 export const getOpinionPromptsRequest = () => axios.get(`${API_URL}/opinion-prompts`)
 
 export const createOpinionPromptRequest = (payload) => {
@@ -79,9 +86,30 @@ export const submitOpinionAnswerRequest = (promptId, payload) => {
   })
 }
 
+export const getMyOpinionSubmissionRequest = (promptId) => {
+  const token = localStorage.getItem('linguatech_token')
+  return axios.get(`${API_URL}/opinion-prompts/${promptId}/submission/me`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+}
+
 export const getAdminOpinionSubmissionsRequest = () => {
   const token = localStorage.getItem('linguatech_token')
   return axios.get(`${API_URL}/opinion-submissions/admin`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+}
+
+export const deleteOpinionSubmissionRequest = (submissionId) => {
+  const token = localStorage.getItem('linguatech_token')
+  return axios.delete(`${API_URL}/opinion-submissions/${submissionId}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+}
+
+export const updateOpinionSubmissionFeedbackRequest = (submissionId, payload) => {
+  const token = localStorage.getItem('linguatech_token')
+  return axios.patch(`${API_URL}/opinion-submissions/${submissionId}/feedback`, payload, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   })
 }

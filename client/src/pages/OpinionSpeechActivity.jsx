@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getOpinionPromptsRequest } from '../services/activityApi'
 
+const PAGE_SIZE = 6
+
 const defaultContent = {
   title: 'Digital Communication and Student Interaction',
   instruction:
@@ -15,12 +17,22 @@ const defaultContent = {
 function OpinionSpeechActivity() {
   const [opinionContents, setOpinionContents] = useState([])
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+
+  const sortOldestFirst = (items) =>
+    [...items].sort((a, b) => {
+      const first = new Date(a?.createdAt || 0).getTime()
+      const second = new Date(b?.createdAt || 0).getTime()
+      return first - second
+    })
+
   useEffect(() => {
     const loadPrompts = async () => {
       try {
         const { data } = await getOpinionPromptsRequest()
-        const contents = data?.prompts || []
+        const contents = sortOldestFirst(data?.prompts || [])
         setOpinionContents(contents)
+        setPage(1)
       } catch {
         setOpinionContents([])
       } finally {
@@ -53,8 +65,14 @@ function OpinionSpeechActivity() {
         {loading ? (
           <p className="mt-4 text-sm text-[#6E7382]">Loading opinions...</p>
         ) : (
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {(opinionContents.length > 0 ? opinionContents : [defaultContent]).map((content, index) => {
+          <>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {(opinionContents.length > 0
+                ? opinionContents.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+                : [defaultContent]
+              ).map((content, index) => {
+              const globalIndex =
+                (opinionContents.length > 0 ? (page - 1) * PAGE_SIZE : 0) + index
               const contentId = String(content._id || content.id || `default-${index}`)
               return (
                 <Link
@@ -62,15 +80,45 @@ function OpinionSpeechActivity() {
                   to={`/activities/opinion-speech/${contentId}`}
                   className="rounded-xl border border-[#e7e7ee] bg-white p-4 transition hover:border-[#4ED0FF] hover:bg-[#eefbff]"
                 >
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#2979FF]">Opinion {index + 1}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#2979FF]">
+                    Opinion {globalIndex + 1}
+                  </p>
                   <p className="mt-1 text-sm font-semibold text-[#5A4DD5]">
-                    {content.title || `Opinion ${index + 1}`}
+                    {content.title || `Opinion ${globalIndex + 1}`}
                   </p>
                   <p className="mt-3 text-xs font-semibold text-[#5A4DD5]">Open Opinion Speech →</p>
                 </Link>
               )
             })}
-          </div>
+            </div>
+            {opinionContents.length > PAGE_SIZE && (
+              <div className="mt-4 flex items-center justify-between">
+                <p className="text-xs text-[#6E7382]">
+                  Page {page} of {Math.ceil(opinionContents.length / PAGE_SIZE)}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={page <= 1}
+                    onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                    className="rounded-lg border border-[#d8dbe7] px-3 py-1.5 text-xs font-semibold text-[#1F2430] disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    disabled={page >= Math.ceil(opinionContents.length / PAGE_SIZE)}
+                    onClick={() =>
+                      setPage((prev) => Math.min(Math.ceil(opinionContents.length / PAGE_SIZE), prev + 1))
+                    }
+                    className="rounded-lg border border-[#d8dbe7] px-3 py-1.5 text-xs font-semibold text-[#1F2430] disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </article>
     </section>

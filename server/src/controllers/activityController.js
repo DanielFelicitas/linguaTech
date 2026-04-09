@@ -169,10 +169,23 @@ export const getReadingAttemptsForAdmin = async (req, res) => {
   }
 }
 
+export const deleteReadingAttempt = async (req, res) => {
+  try {
+    const { attemptId } = req.params
+    const deleted = await ReadingAttempt.findByIdAndDelete(attemptId)
+    if (!deleted) {
+      return res.status(404).json({ message: 'Reading submission not found.' })
+    }
+    return res.json({ message: 'Reading submission deleted successfully.' })
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to delete reading submission.' })
+  }
+}
+
 export const getOpinionPrompts = async (req, res) => {
   try {
     const prompts = await OpinionPrompt.find({})
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: 1, _id: 1 })
       .select('title instruction example question createdAt')
     return res.json({ prompts })
   } catch (error) {
@@ -287,6 +300,25 @@ export const submitOpinionAnswer = async (req, res) => {
       return res.status(404).json({ message: 'Opinion prompt not found.' })
     }
 
+    const existingSubmission = await OpinionSubmission.findOne({
+      prompt: prompt._id,
+      student: req.user._id,
+    })
+    if (existingSubmission) {
+      return res.status(409).json({
+        message: 'You already submitted this opinion speech.',
+        submission: {
+          id: existingSubmission._id,
+          prompt: existingSubmission.prompt,
+          student: existingSubmission.student,
+          answerText: existingSubmission.answerText,
+          durationSeconds: existingSubmission.durationSeconds,
+          feedback: existingSubmission.feedback || '',
+          createdAt: existingSubmission.createdAt,
+        },
+      })
+    }
+
     const submission = await OpinionSubmission.create({
       prompt: prompt._id,
       student: req.user._id,
@@ -302,11 +334,39 @@ export const submitOpinionAnswer = async (req, res) => {
         student: submission.student,
         answerText: submission.answerText,
         durationSeconds: submission.durationSeconds,
+        feedback: submission.feedback || '',
         createdAt: submission.createdAt,
       },
     })
   } catch (error) {
     return res.status(500).json({ message: 'Failed to submit opinion answer.' })
+  }
+}
+
+export const getMyOpinionSubmissionByPrompt = async (req, res) => {
+  try {
+    const { promptId } = req.params
+    const submission = await OpinionSubmission.findOne({
+      prompt: promptId,
+      student: req.user._id,
+    }).select('prompt answerText durationSeconds feedback createdAt')
+
+    if (!submission) {
+      return res.json({ submission: null })
+    }
+
+    return res.json({
+      submission: {
+        id: submission._id,
+        prompt: submission.prompt,
+        answerText: submission.answerText,
+        durationSeconds: submission.durationSeconds,
+        feedback: submission.feedback || '',
+        createdAt: submission.createdAt,
+      },
+    })
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to load your opinion submission.' })
   }
 }
 
@@ -322,6 +382,7 @@ export const getOpinionSubmissionsForAdmin = async (req, res) => {
         id: item._id,
         answerText: item.answerText,
         durationSeconds: item.durationSeconds,
+        feedback: item.feedback || '',
         createdAt: item.createdAt,
         student: item.student
           ? { id: item.student._id, name: item.student.name, email: item.student.email }
@@ -333,6 +394,45 @@ export const getOpinionSubmissionsForAdmin = async (req, res) => {
     })
   } catch (error) {
     return res.status(500).json({ message: 'Failed to load opinion submissions.' })
+  }
+}
+
+export const updateOpinionSubmissionFeedback = async (req, res) => {
+  try {
+    const { submissionId } = req.params
+    const { feedback } = req.body
+
+    const updated = await OpinionSubmission.findByIdAndUpdate(
+      submissionId,
+      { feedback: String(feedback || '').trim() },
+      { new: true },
+    )
+    if (!updated) {
+      return res.status(404).json({ message: 'Speech submission not found.' })
+    }
+
+    return res.json({
+      message: 'Feedback updated successfully.',
+      submission: {
+        id: updated._id,
+        feedback: updated.feedback || '',
+      },
+    })
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to update feedback.' })
+  }
+}
+
+export const deleteOpinionSubmission = async (req, res) => {
+  try {
+    const { submissionId } = req.params
+    const deleted = await OpinionSubmission.findByIdAndDelete(submissionId)
+    if (!deleted) {
+      return res.status(404).json({ message: 'Speech submission not found.' })
+    }
+    return res.json({ message: 'Speech submission deleted successfully.' })
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to delete speech submission.' })
   }
 }
 

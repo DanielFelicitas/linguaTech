@@ -116,13 +116,29 @@ function Layout() {
                         </p>
                       )}
                       {user.role === 'admin' && (
-                        <Link
-                          to="/admin/reading-quizzes"
-                          onClick={() => setIsProfileOpen(false)}
-                          className="mt-3 block w-full rounded-lg border border-[#d8dbe7] px-3 py-2 text-center text-sm font-semibold text-[#1F2430] transition hover:bg-[#F5F5F7]"
-                        >
-                          Manage Content
-                        </Link>
+                        <>
+                          <Link
+                            to="/admin/reading-quizzes"
+                            onClick={() => setIsProfileOpen(false)}
+                            className="mt-3 block w-full rounded-lg border border-[#d8dbe7] px-3 py-2 text-center text-sm font-semibold text-[#1F2430] transition hover:bg-[#F5F5F7]"
+                          >
+                            Manage Content
+                          </Link>
+                          <Link
+                            to="/admin/question-submissions"
+                            onClick={() => setIsProfileOpen(false)}
+                            className="mt-2 block w-full rounded-lg border border-[#d8dbe7] px-3 py-2 text-center text-sm font-semibold text-[#1F2430] transition hover:bg-[#F5F5F7]"
+                          >
+                            Question Submissions
+                          </Link>
+                          <Link
+                            to="/admin/speech-submissions"
+                            onClick={() => setIsProfileOpen(false)}
+                            className="mt-2 block w-full rounded-lg border border-[#d8dbe7] px-3 py-2 text-center text-sm font-semibold text-[#1F2430] transition hover:bg-[#F5F5F7]"
+                          >
+                            Speech Submissions
+                          </Link>
+                        </>
                       )}
                       <button
                         type="button"
@@ -217,13 +233,29 @@ function Layout() {
                   <p className="text-sm font-semibold text-white">{user.name || 'User'}</p>
                   <p className="text-xs text-white/80">{user.email}</p>
                   {user.role === 'admin' && (
-                    <Link
-                      to="/admin/reading-quizzes"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="block w-full rounded-lg bg-white/90 px-3 py-2 text-center text-sm font-semibold text-[#1F2430]"
-                    >
-                      Manage Content
-                    </Link>
+                    <>
+                      <Link
+                        to="/admin/reading-quizzes"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block w-full rounded-lg bg-white/90 px-3 py-2 text-center text-sm font-semibold text-[#1F2430]"
+                      >
+                        Manage Content
+                      </Link>
+                      <Link
+                        to="/admin/question-submissions"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block w-full rounded-lg bg-white/90 px-3 py-2 text-center text-sm font-semibold text-[#1F2430]"
+                      >
+                        Question Submissions
+                      </Link>
+                      <Link
+                        to="/admin/speech-submissions"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block w-full rounded-lg bg-white/90 px-3 py-2 text-center text-sm font-semibold text-[#1F2430]"
+                      >
+                        Speech Submissions
+                      </Link>
+                    </>
                   )}
                   <button
                     type="button"

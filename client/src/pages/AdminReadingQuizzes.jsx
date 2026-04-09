@@ -1,12 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   createOpinionPromptRequest,
   createReadingQuizRequest,
   deleteOpinionPromptRequest,
   deleteReadingQuizRequest,
-  getAdminOpinionSubmissionsRequest,
-  getAdminReadingAttemptsRequest,
   getOpinionPromptsRequest,
   getReadingQuizzesRequest,
   updateOpinionPromptRequest,
@@ -18,6 +16,7 @@ const emptyQuestion = () => ({
   options: ['', '', '', ''],
   correctOption: 0,
 })
+const PAGE_SIZE = 6
 
 function AdminReadingQuizzes() {
   const [activeManager, setActiveManager] = useState('reading')
@@ -29,12 +28,10 @@ function AdminReadingQuizzes() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [quizzes, setQuizzes] = useState([])
   const [isLoadingList, setIsLoadingList] = useState(true)
-  const [attempts, setAttempts] = useState([])
-  const [isLoadingAttempts, setIsLoadingAttempts] = useState(true)
-  const [opinionSubmissions, setOpinionSubmissions] = useState([])
-  const [isLoadingOpinionSubmissions, setIsLoadingOpinionSubmissions] = useState(true)
   const [prompts, setPrompts] = useState([])
   const [isLoadingPrompts, setIsLoadingPrompts] = useState(true)
+  const [quizPage, setQuizPage] = useState(1)
+  const [promptPage, setPromptPage] = useState(1)
   const [promptId, setPromptId] = useState(null)
   const [promptTitle, setPromptTitle] = useState('')
   const [promptInstruction, setPromptInstruction] = useState('')
@@ -45,39 +42,37 @@ function AdminReadingQuizzes() {
   const user = JSON.parse(localStorage.getItem('linguatech_user') || 'null')
   const isAdmin = user?.role === 'admin'
 
+  const paginatedQuizzes = useMemo(() => {
+    const startIndex = (quizPage - 1) * PAGE_SIZE
+    return quizzes.slice(startIndex, startIndex + PAGE_SIZE)
+  }, [quizzes, quizPage])
+
+  const sortedPrompts = useMemo(() => {
+    return [...prompts].sort((a, b) => {
+      const first = new Date(a.createdAt || 0).getTime()
+      const second = new Date(b.createdAt || 0).getTime()
+      return first - second
+    })
+  }, [prompts])
+
+  const paginatedPrompts = useMemo(() => {
+    const startIndex = (promptPage - 1) * PAGE_SIZE
+    return sortedPrompts.slice(startIndex, startIndex + PAGE_SIZE)
+  }, [sortedPrompts, promptPage])
+
+  const quizTotalPages = Math.max(1, Math.ceil(quizzes.length / PAGE_SIZE))
+  const promptTotalPages = Math.max(1, Math.ceil(sortedPrompts.length / PAGE_SIZE))
+
   const loadQuizzes = async () => {
     try {
       setIsLoadingList(true)
       const { data } = await getReadingQuizzesRequest()
       setQuizzes(data?.quizzes || [])
+      setQuizPage(1)
     } catch (error) {
       setMessage(error.response?.data?.message || 'Failed to load quizzes.')
     } finally {
       setIsLoadingList(false)
-    }
-  }
-
-  const loadAttempts = async () => {
-    try {
-      setIsLoadingAttempts(true)
-      const { data } = await getAdminReadingAttemptsRequest()
-      setAttempts(data?.attempts || [])
-    } catch (error) {
-      setMessage(error.response?.data?.message || 'Failed to load student scores.')
-    } finally {
-      setIsLoadingAttempts(false)
-    }
-  }
-
-  const loadOpinionSubmissions = async () => {
-    try {
-      setIsLoadingOpinionSubmissions(true)
-      const { data } = await getAdminOpinionSubmissionsRequest()
-      setOpinionSubmissions(data?.submissions || [])
-    } catch (error) {
-      setMessage(error.response?.data?.message || 'Failed to load opinion submissions.')
-    } finally {
-      setIsLoadingOpinionSubmissions(false)
     }
   }
 
@@ -86,6 +81,7 @@ function AdminReadingQuizzes() {
       setIsLoadingPrompts(true)
       const { data } = await getOpinionPromptsRequest()
       setPrompts(data?.prompts || [])
+      setPromptPage(1)
     } catch (error) {
       setMessage(error.response?.data?.message || 'Failed to load opinion prompts.')
     } finally {
@@ -96,9 +92,7 @@ function AdminReadingQuizzes() {
   useEffect(() => {
     if (isAdmin) {
       loadQuizzes()
-      loadAttempts()
       loadOpinionPrompts()
-      loadOpinionSubmissions()
     }
   }, [isAdmin])
 
@@ -170,9 +164,7 @@ function AdminReadingQuizzes() {
       setMessage(data.message || (quizId ? 'Quiz updated successfully.' : 'Quiz created successfully.'))
       resetForm()
       await loadQuizzes()
-      await loadAttempts()
       await loadOpinionPrompts()
-      await loadOpinionSubmissions()
     } catch (error) {
       setMessage(error.response?.data?.message || 'Failed to save quiz.')
     } finally {
@@ -226,9 +218,7 @@ function AdminReadingQuizzes() {
       setMessage('Quiz deleted successfully.')
       if (quizId === id) resetForm()
       await loadQuizzes()
-      await loadAttempts()
       await loadOpinionPrompts()
-      await loadOpinionSubmissions()
     } catch (error) {
       setMessage(error.response?.data?.message || 'Failed to delete quiz.')
     }
@@ -309,8 +299,8 @@ function AdminReadingQuizzes() {
     <section className="space-y-6 rounded-3xl border border-[#e7e7ee] bg-[#F5F5F7] p-6 shadow-sm sm:p-8">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-[#5A4DD5]">Manage Reading Content</h1>
-          <p className="text-sm text-[#6E7382]">Create, update, delete content for Activity 2 and Activity 3.</p>
+          <h1 className="text-2xl font-bold text-[#5A4DD5]">Manage Content</h1>
+          <p className="text-sm text-[#6E7382]">Create, update, delete content for Activity 2 and Activity 1.</p>
         </div>
         <Link to="/activities/reading" className="rounded-xl border border-[#d8dbe7] bg-white px-4 py-2 text-sm font-semibold text-[#1F2430]">
           View Reading Activity
@@ -338,7 +328,7 @@ function AdminReadingQuizzes() {
               : 'border border-[#d8dbe7] bg-white text-[#1F2430]'
           }`}
         >
-          Activity 3 Manager
+          Activity 1 Manager
         </button>
       </div>
 
@@ -470,7 +460,7 @@ function AdminReadingQuizzes() {
           <p className="mt-3 text-sm text-[#6E7382]">No quizzes yet.</p>
         ) : (
           <div className="mt-3 space-y-3">
-            {quizzes.map((quiz) => (
+            {paginatedQuizzes.map((quiz) => (
               <article
                 key={quiz._id || quiz.id}
                 className="rounded-xl border border-[#e7e7ee] p-3"
@@ -506,6 +496,31 @@ function AdminReadingQuizzes() {
             ))}
           </div>
         )}
+        {!isLoadingList && quizzes.length > 0 && (
+          <div className="mt-4 flex items-center justify-between">
+            <p className="text-xs text-[#6E7382]">
+              Page {quizPage} of {quizTotalPages}
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={quizPage <= 1}
+                onClick={() => setQuizPage((prev) => Math.max(1, prev - 1))}
+                className="rounded-lg border border-[#d8dbe7] px-3 py-1.5 text-xs font-semibold text-[#1F2430] disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                disabled={quizPage >= quizTotalPages}
+                onClick={() => setQuizPage((prev) => Math.min(quizTotalPages, prev + 1))}
+                className="rounded-lg border border-[#d8dbe7] px-3 py-1.5 text-xs font-semibold text-[#1F2430] disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </section>
       </div>
       </>
@@ -513,7 +528,7 @@ function AdminReadingQuizzes() {
 
       {activeManager === 'opinion' && (
       <section className="rounded-2xl border border-[#d8dbe7] bg-white p-4 sm:p-5">
-        <h2 className="text-sm font-semibold text-[#2979FF]">Activity 3: Opinion Prompts</h2>
+        <h2 className="text-sm font-semibold text-[#2979FF]">Activity 1: Opinion Prompts</h2>
         <form onSubmit={savePrompt} className="mt-3 space-y-3">
           <input
             type="text"
@@ -573,7 +588,7 @@ function AdminReadingQuizzes() {
           <p className="mt-3 text-sm text-[#6E7382]">No opinion prompts yet.</p>
         ) : (
           <div className="mt-3 space-y-3">
-            {prompts.map((prompt) => (
+            {paginatedPrompts.map((prompt) => (
               <article key={prompt._id || prompt.id} className="rounded-xl border border-[#e7e7ee] p-3">
                 <p className="text-xs font-semibold text-[#2979FF]">Title</p>
                 <p className="text-sm font-semibold text-[#1F2430]">{prompt.title}</p>
@@ -603,69 +618,35 @@ function AdminReadingQuizzes() {
             ))}
           </div>
         )}
+        {!isLoadingPrompts && sortedPrompts.length > 0 && (
+          <div className="mt-4 flex items-center justify-between">
+            <p className="text-xs text-[#6E7382]">
+              Page {promptPage} of {promptTotalPages}
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={promptPage <= 1}
+                onClick={() => setPromptPage((prev) => Math.max(1, prev - 1))}
+                className="rounded-lg border border-[#d8dbe7] px-3 py-1.5 text-xs font-semibold text-[#1F2430] disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                disabled={promptPage >= promptTotalPages}
+                onClick={() => setPromptPage((prev) => Math.min(promptTotalPages, prev + 1))}
+                className="rounded-lg border border-[#d8dbe7] px-3 py-1.5 text-xs font-semibold text-[#1F2430] disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </section>
       )}
 
-      <section className="rounded-2xl border border-[#d8dbe7] bg-white p-4 sm:p-5">
-        <h2 className="text-sm font-semibold text-[#2979FF]">Student Scores</h2>
-        {isLoadingAttempts ? (
-          <p className="mt-3 text-sm text-[#6E7382]">Loading student scores...</p>
-        ) : attempts.length === 0 ? (
-          <p className="mt-3 text-sm text-[#6E7382]">No submissions yet.</p>
-        ) : (
-          <div className="mt-3 overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-[#e7e7ee] text-[#6E7382]">
-                  <th className="px-2 py-2 font-semibold">Student</th>
-                  <th className="px-2 py-2 font-semibold">Email</th>
-                  <th className="px-2 py-2 font-semibold">Quiz</th>
-                  <th className="px-2 py-2 font-semibold">Score</th>
-                </tr>
-              </thead>
-              <tbody>
-                {attempts.map((attempt) => (
-                  <tr key={attempt.id} className="border-b border-[#f0f0f4] text-[#1F2430]">
-                    <td className="px-2 py-2">{attempt.student?.name || 'Unknown'}</td>
-                    <td className="px-2 py-2">{attempt.student?.email || '-'}</td>
-                    <td className="px-2 py-2">{attempt.quiz?.title || 'Deleted quiz'}</td>
-                    <td className="px-2 py-2 font-semibold">
-                      {attempt.score}/{attempt.total}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-
       {message && <p className="text-sm text-[#6E7382]">{message}</p>}
-
-      <section className="rounded-2xl border border-[#d8dbe7] bg-white p-4 sm:p-5">
-        <h2 className="text-sm font-semibold text-[#2979FF]">Opinion Submissions</h2>
-        {isLoadingOpinionSubmissions ? (
-          <p className="mt-3 text-sm text-[#6E7382]">Loading opinion submissions...</p>
-        ) : opinionSubmissions.length === 0 ? (
-          <p className="mt-3 text-sm text-[#6E7382]">No opinion submissions yet.</p>
-        ) : (
-          <div className="mt-3 space-y-3">
-            {opinionSubmissions.map((item) => (
-              <article key={item.id} className="rounded-xl border border-[#e7e7ee] p-3">
-                <p className="text-sm font-semibold text-[#1F2430]">
-                  {item.student?.name || 'Unknown'} ({item.student?.email || '-'})
-                </p>
-                <p className="mt-1 text-xs font-semibold text-[#2979FF]">
-                  {item.prompt?.title || 'Untitled Opinion'}
-                </p>
-                <p className="mt-1 text-xs text-[#6E7382]">{item.prompt?.question || 'No question available'}</p>
-                <p className="mt-2 rounded-lg bg-[#F5F5F7] p-3 text-sm text-[#1F2430]">{item.answerText}</p>
-                <p className="mt-1 text-xs text-[#6E7382]">Duration: {item.durationSeconds}s</p>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
     </section>
   )
 }

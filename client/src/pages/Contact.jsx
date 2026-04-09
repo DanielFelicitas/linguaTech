@@ -1,3 +1,17 @@
+const getInitials = (name) =>
+  (name || '')
+    .split(/[,\s]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('') || 'LT'
+
+const getFallbackAvatar = (name) => {
+  const initials = getInitials(name)
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420"><rect width="100%" height="100%" fill="#E9EDF7"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-size="88" font-weight="700" fill="#5A4DD5">${initials}</text></svg>`
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`
+}
+
 const contactMembers = [
   {
     name: 'ACABADO, JULIE ANN M. ',
@@ -62,6 +76,10 @@ function Contact() {
             <img
               src={encodeURI(member.photo)}
               alt={member.name}
+              onError={(event) => {
+                event.currentTarget.onerror = null
+                event.currentTarget.src = getFallbackAvatar(member.name)
+              }}
               className="mb-3 h-56 w-full rounded-xl bg-[#f2f4fa] object-contain"
               loading="lazy"
             />
