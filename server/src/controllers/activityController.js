@@ -1,5 +1,7 @@
 import ReadingQuiz from '../models/ReadingQuiz.js'
 import ReadingAttempt from '../models/ReadingAttempt.js'
+import OpinionPrompt from '../models/OpinionPrompt.js'
+import OpinionSubmission from '../models/OpinionSubmission.js'
 
 export const checkGrammar = async (req, res) => {
   try {
@@ -164,6 +166,173 @@ export const getReadingAttemptsForAdmin = async (req, res) => {
     })
   } catch (error) {
     return res.status(500).json({ message: 'Failed to load student scores.' })
+  }
+}
+
+export const getOpinionPrompts = async (req, res) => {
+  try {
+    const prompts = await OpinionPrompt.find({})
+      .sort({ createdAt: -1 })
+      .select('title instruction example question createdAt')
+    return res.json({ prompts })
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to load opinion prompts.' })
+  }
+}
+
+export const createOpinionPrompt = async (req, res) => {
+  try {
+    const { title, instruction, example, question } = req.body
+    if (
+      !title || !title.trim() ||
+      !instruction || !instruction.trim() ||
+      !example || !example.trim() ||
+      !question || !question.trim()
+    ) {
+      return res.status(400).json({ message: 'Title, instruction, example, and question are required.' })
+    }
+
+    const created = await OpinionPrompt.create({
+      title: title.trim(),
+      instruction: instruction.trim(),
+      example: example.trim(),
+      question: question.trim(),
+      createdBy: req.user._id,
+    })
+
+    return res.status(201).json({
+      message: 'Opinion prompt created successfully.',
+      prompt: {
+        id: created._id,
+        title: created.title,
+        instruction: created.instruction,
+        example: created.example,
+        question: created.question,
+        createdAt: created.createdAt,
+      },
+    })
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to create opinion prompt.' })
+  }
+}
+
+export const updateOpinionPrompt = async (req, res) => {
+  try {
+    const { promptId } = req.params
+    const { title, instruction, example, question } = req.body
+    if (
+      !title || !title.trim() ||
+      !instruction || !instruction.trim() ||
+      !example || !example.trim() ||
+      !question || !question.trim()
+    ) {
+      return res.status(400).json({ message: 'Title, instruction, example, and question are required.' })
+    }
+
+    const updated = await OpinionPrompt.findByIdAndUpdate(
+      promptId,
+      {
+        title: title.trim(),
+        instruction: instruction.trim(),
+        example: example.trim(),
+        question: question.trim(),
+      },
+      { new: true },
+    )
+    if (!updated) {
+      return res.status(404).json({ message: 'Opinion prompt not found.' })
+    }
+
+    return res.json({
+      message: 'Opinion prompt updated successfully.',
+      prompt: {
+        id: updated._id,
+        title: updated.title,
+        instruction: updated.instruction,
+        example: updated.example,
+        question: updated.question,
+        createdAt: updated.createdAt,
+      },
+    })
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to update opinion prompt.' })
+  }
+}
+
+export const deleteOpinionPrompt = async (req, res) => {
+  try {
+    const { promptId } = req.params
+    const deleted = await OpinionPrompt.findByIdAndDelete(promptId)
+    if (!deleted) {
+      return res.status(404).json({ message: 'Opinion prompt not found.' })
+    }
+
+    return res.json({ message: 'Opinion prompt deleted successfully.' })
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to delete opinion prompt.' })
+  }
+}
+
+export const submitOpinionAnswer = async (req, res) => {
+  try {
+    const { promptId } = req.params
+    const { answerText, durationSeconds } = req.body
+
+    if (!answerText || !answerText.trim()) {
+      return res.status(400).json({ message: 'Answer text is required.' })
+    }
+
+    const prompt = await OpinionPrompt.findById(promptId).select('_id')
+    if (!prompt) {
+      return res.status(404).json({ message: 'Opinion prompt not found.' })
+    }
+
+    const submission = await OpinionSubmission.create({
+      prompt: prompt._id,
+      student: req.user._id,
+      answerText: answerText.trim(),
+      durationSeconds: Number(durationSeconds) > 0 ? Number(durationSeconds) : 60,
+    })
+
+    return res.status(201).json({
+      message: 'Opinion answer submitted successfully.',
+      submission: {
+        id: submission._id,
+        prompt: submission.prompt,
+        student: submission.student,
+        answerText: submission.answerText,
+        durationSeconds: submission.durationSeconds,
+        createdAt: submission.createdAt,
+      },
+    })
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to submit opinion answer.' })
+  }
+}
+
+export const getOpinionSubmissionsForAdmin = async (req, res) => {
+  try {
+    const submissions = await OpinionSubmission.find({})
+      .populate('student', 'name email')
+      .populate('prompt', 'title question')
+      .sort({ createdAt: -1 })
+
+    return res.json({
+      submissions: submissions.map((item) => ({
+        id: item._id,
+        answerText: item.answerText,
+        durationSeconds: item.durationSeconds,
+        createdAt: item.createdAt,
+        student: item.student
+          ? { id: item.student._id, name: item.student.name, email: item.student.email }
+          : null,
+        prompt: item.prompt
+          ? { id: item.prompt._id, title: item.prompt.title, question: item.prompt.question }
+          : null,
+      })),
+    })
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to load opinion submissions.' })
   }
 }
 

@@ -3,6 +3,8 @@ import Layout from './components/Layout'
 import About from './pages/About'
 import Activities from './pages/Activities'
 import AdminReadingQuizzes from './pages/AdminReadingQuizzes'
+import OpinionSpeechActivity from './pages/OpinionSpeechActivity'
+import OpinionSpeechDetail from './pages/OpinionSpeechDetail'
 import ReadingActivity from './pages/ReadingActivity'
 import SpeakingActivity from './pages/SpeakingActivity'
 import Contact from './pages/Contact'
@@ -19,6 +21,8 @@ function App() {
         <Route path="/activities" element={<Activities />} />
         <Route path="/activities/speaking" element={<SpeakingActivity />} />
         <Route path="/activities/reading" element={<ReadingActivity />} />
+        <Route path="/activities/opinion-speech" element={<OpinionSpeechActivity />} />
+        <Route path="/activities/opinion-speech/:contentId" element={<OpinionSpeechDetail />} />
         <Route path="/admin/reading-quizzes" element={<AdminReadingQuizzes />} />
         <Route path="/chat" element={<ChatBot />} />
         <Route path="/about" element={<About />} />

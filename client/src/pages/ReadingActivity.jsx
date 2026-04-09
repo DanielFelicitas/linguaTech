@@ -8,6 +8,7 @@ import {
 
 function ReadingActivity() {
   const [quizzes, setQuizzes] = useState([])
+  const [selectedQuizId, setSelectedQuizId] = useState('')
   const [answersByQuiz, setAnswersByQuiz] = useState({})
   const [attemptsByQuiz, setAttemptsByQuiz] = useState({})
   const [submittingQuizId, setSubmittingQuizId] = useState('')
@@ -34,6 +35,9 @@ function ReadingActivity() {
         }, {})
 
         setQuizzes(nextQuizzes)
+        if (nextQuizzes.length) {
+          setSelectedQuizId(String(nextQuizzes[0]._id || nextQuizzes[0].id))
+        }
         setAttemptsByQuiz(attemptsMap)
         if (!nextQuizzes.length) {
           setError('No reading quiz yet. Ask an admin to create one.')
@@ -109,53 +113,84 @@ function ReadingActivity() {
           <p className="text-sm text-[#FF3D00]">{error}</p>
         ) : (
           <>
-            <div className="space-y-5">
-              {quizzes.map((quiz) => {
-                const quizId = String(quiz._id || quiz.id)
-                const attempt = attemptsByQuiz[quizId]
-                const isTaken = Boolean(attempt)
+            <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
+              <aside className="space-y-3">
+                <p className="text-sm font-semibold text-[#2979FF]">All Reading Quizzes</p>
+                {quizzes.map((quiz) => {
+                  const quizId = String(quiz._id || quiz.id)
+                  const isSelected = selectedQuizId === quizId
+                  const attempt = attemptsByQuiz[quizId]
+                  return (
+                    <button
+                      key={quizId}
+                      type="button"
+                      onClick={() => setSelectedQuizId(quizId)}
+                      className={`w-full rounded-xl border p-3 text-left transition ${
+                        isSelected
+                          ? 'border-[#4ED0FF] bg-[#eefbff]'
+                          : 'border-[#e7e7ee] bg-white hover:border-[#4ED0FF]'
+                      }`}
+                    >
+                      <p className="text-sm font-semibold text-[#1F2430]">{quiz.title}</p>
+                      <p className="mt-1 text-xs text-[#6E7382]">{quiz.questions?.length || 0} question(s)</p>
+                      {attempt && (
+                        <p className="mt-1 text-xs font-semibold text-[#5A4DD5]">
+                          Score: {attempt.score}/{attempt.total}
+                        </p>
+                      )}
+                    </button>
+                  )
+                })}
+              </aside>
 
-                return (
-                  <section key={quizId} className="rounded-xl border border-[#d8dbe7] p-4">
-                    <div className="rounded-xl bg-[#F5F5F7] p-4">
-                      <h3 className="mb-2 text-sm font-semibold text-[#2979FF]">{quiz.title}</h3>
-                      <p className="whitespace-pre-line text-sm text-[#1F2430]">{quiz.article}</p>
-                    </div>
+              {quizzes
+                .filter((quiz) => String(quiz._id || quiz.id) === selectedQuizId)
+                .map((quiz) => {
+                  const quizId = String(quiz._id || quiz.id)
+                  const attempt = attemptsByQuiz[quizId]
+                  const isTaken = Boolean(attempt)
 
-                    <div className="mt-4 space-y-4">
-                      {quiz.questions?.map((question, index) => (
-                        <QuestionBlock
-                          key={`${quizId}-${index}`}
-                          id={`${quizId}-q-${index}`}
-                          question={`${index + 1}) ${question.question}`}
-                          options={question.options.map((option, optionIndex) => ({
-                            id: optionIndex,
-                            label: option,
-                          }))}
-                          selected={answersByQuiz[quizId]?.[index]}
-                          disabled={isTaken}
-                          onSelect={(value) => updateAnswer(quizId, index, value)}
-                        />
-                      ))}
-                    </div>
+                  return (
+                    <section key={quizId} className="rounded-xl border border-[#d8dbe7] p-4">
+                      <div className="rounded-xl bg-[#F5F5F7] p-4">
+                        <h3 className="mb-2 text-sm font-semibold text-[#2979FF]">{quiz.title}</h3>
+                        <p className="whitespace-pre-line text-sm text-[#1F2430]">{quiz.article}</p>
+                      </div>
 
-                    {isTaken ? (
-                      <p className="mt-4 text-sm font-semibold text-[#1F2430]">
-                        Your score: {attempt.score}/{attempt.total} (already submitted)
-                      </p>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => submitQuiz(quiz)}
-                        disabled={submittingQuizId === quizId}
-                        className="mt-4 rounded-xl bg-[#5A4DD5] px-4 py-2 text-sm font-semibold text-white disabled:opacity-70"
-                      >
-                        {submittingQuizId === quizId ? 'Submitting...' : 'Submit Quiz'}
-                      </button>
-                    )}
-                  </section>
-                )
-              })}
+                      <div className="mt-4 space-y-4">
+                        {quiz.questions?.map((question, index) => (
+                          <QuestionBlock
+                            key={`${quizId}-${index}`}
+                            id={`${quizId}-q-${index}`}
+                            question={`${index + 1}) ${question.question}`}
+                            options={question.options.map((option, optionIndex) => ({
+                              id: optionIndex,
+                              label: option,
+                            }))}
+                            selected={answersByQuiz[quizId]?.[index]}
+                            disabled={isTaken}
+                            onSelect={(value) => updateAnswer(quizId, index, value)}
+                          />
+                        ))}
+                      </div>
+
+                      {isTaken ? (
+                        <p className="mt-4 text-sm font-semibold text-[#1F2430]">
+                          Your score: {attempt.score}/{attempt.total} (already submitted)
+                        </p>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => submitQuiz(quiz)}
+                          disabled={submittingQuizId === quizId}
+                          className="mt-4 rounded-xl bg-[#5A4DD5] px-4 py-2 text-sm font-semibold text-white disabled:opacity-70"
+                        >
+                          {submittingQuizId === quizId ? 'Submitting...' : 'Submit Quiz'}
+                        </button>
+                      )}
+                    </section>
+                  )
+                })}
             </div>
             {message && <p className="mt-4 text-sm text-[#6E7382]">{message}</p>}
           </>
