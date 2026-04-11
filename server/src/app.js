@@ -25,6 +25,10 @@ app.use((req, _res, next) => {
   next()
 })
 
+/** Browsers request /favicon.ico even when HTML only links SVG; skip JSON + DB (Vercel catch-all → API). */
+app.get('/favicon.ico', (_req, res) => res.status(204).end())
+app.head('/favicon.ico', (_req, res) => res.status(204).end())
+
 app.use(express.json({ limit: '1mb' }))
 
 /** Liveness — no MongoDB (uptime / cold start). Must stay above connectDB middleware. */

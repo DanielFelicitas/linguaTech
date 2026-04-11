@@ -1,5 +1,6 @@
 import axios from 'axios'
+import { API_ORIGIN } from '../lib/apiBase.js'
 
-const API_URL = 'http://localhost:5000/api/chat'
+const API_URL = `${API_ORIGIN}/api/chat`
 
 export const sendChatMessage = (messages) => axios.post(API_URL, { messages })

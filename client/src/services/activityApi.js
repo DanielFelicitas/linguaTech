@@ -1,6 +1,7 @@
 import axios from 'axios'
+import { API_ORIGIN } from '../lib/apiBase.js'
 
-const API_URL = 'http://localhost:5000/api/activities'
+const API_URL = `${API_ORIGIN}/api/activities`
 
 export const checkGrammarRequest = (payload) =>
   axios.post(`${API_URL}/grammar-check`, payload)
