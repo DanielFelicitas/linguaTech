@@ -13,7 +13,7 @@ function Home() {
               Improve speaking, writing, and comprehension with modern English practice tools.
             </h1>
             <p className="mt-4 max-w-2xl text-base text-[#6E7382] sm:text-lg">
-              Learn through focused activities, instant AI feedback, and guided communication exercises
+              Learn through focused activities, and guided communication exercises
               designed for real classroom and real-world use.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
