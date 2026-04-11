@@ -20,7 +20,9 @@ export const signup = async (req, res) => {
 
     await User.create({ name, email, password: hashedPassword, role })
 
-    return res.status(201).json({ message: 'Sign up successful.' })
+    return res.status(201).json({
+      message: 'Welcome! Your LinguaTech account was created. Sign in with your email and password.',
+    })
   } catch (error) {
     return res.status(500).json({ message: 'Server error while signing up.' })
   }

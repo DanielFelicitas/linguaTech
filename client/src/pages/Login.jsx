@@ -1,9 +1,20 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { loginRequest } from '../services/authApi'
 
 function Login() {
-  const [formData, setFormData] = useState({ email: '', password: '' })
+  const location = useLocation()
+  const [formData, setFormData] = useState({
+    email: location.state?.email ?? '',
+    password: '',
+  })
+  const [signupSuccessNotice, setSignupSuccessNotice] = useState(
+    () =>
+      location.state?.signupSuccess
+        ? (location.state?.message ??
+            'Your account was created successfully. Sign in below.')
+        : '',
+  )
   const [message, setMessage] = useState('')
   const navigate = useNavigate()
 
@@ -33,6 +44,22 @@ function Login() {
     <div className="flex min-h-screen items-center justify-center px-4 py-6 sm:py-10">
       <section className="w-full max-w-md rounded-3xl border border-[#e7e7ee] bg-[#F5F5F7] p-6 shadow-sm sm:p-8">
         <h1 className="mb-6 text-3xl font-bold text-[#5A4DD5]">Login</h1>
+        {signupSuccessNotice && (
+          <div
+            className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950"
+            role="status"
+          >
+            <p className="font-semibold text-emerald-900">Account created</p>
+            <p className="mt-1 text-emerald-900/90">{signupSuccessNotice}</p>
+            <button
+              type="button"
+              className="mt-2 text-xs font-medium text-emerald-800 underline decoration-emerald-600/50 hover:decoration-emerald-800"
+              onClick={() => setSignupSuccessNotice('')}
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
         <form className="space-y-4" onSubmit={onSubmit}>
           <input
             type="email"

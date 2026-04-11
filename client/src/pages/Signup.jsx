@@ -20,8 +20,16 @@ function Signup() {
     event.preventDefault()
     try {
       const { data } = await signupRequest(formData)
-      setMessage(data.message || 'Account created successfully.')
-      navigate('/login')
+      const successMessage =
+        data.message ||
+        'Your account was created successfully. Sign in with your email and password.'
+      navigate('/login', {
+        state: {
+          signupSuccess: true,
+          message: successMessage,
+          email: formData.email,
+        },
+      })
     } catch (error) {
       setMessage(error.response?.data?.message || 'Unable to sign up.')
     }
