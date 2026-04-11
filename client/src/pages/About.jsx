@@ -18,7 +18,7 @@ function About() {
             more engaging and accessible way.
           </p>
           <p>
-            This platform integrates modern digital tools such as AI-assisted feedback, interactive
+            This platform integrates modern digital tools, interactive
             writing activities, and communication-based exercises to simulate real-world language
             use. By combining technology with education, we aim to create a learning environment
             where students can practice, receive feedback, and build confidence in their
