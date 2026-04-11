@@ -27,7 +27,7 @@ function Home() {
                 to="/chat"
                 className="rounded-xl border border-[#4ED0FF] bg-white px-5 py-2.5 text-sm font-semibold text-[#0a2f40] transition hover:bg-[#eefbff]"
               >
-                Open Chat Tutor
+                Open Writing Tutor
               </Link>
             </div>
           </div>
