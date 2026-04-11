@@ -31,32 +31,48 @@ function Activities() {
           </div>
         </Link>
 
-        <Link
-          to="/activities/reading"
-          className="group rounded-2xl border border-[#dcefff] bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-[#4ED0FF] hover:shadow-md sm:p-7"
-        >
-          <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-[#2979FF]">
-            Activity 02
-          </p>
-          <h2 className="mb-2 text-2xl font-bold text-[#5A4DD5]">📖 Reading + Comprehension</h2>
-          <p className="text-base text-[#6E7382]">
-            Short article and multiple-choice comprehension questions.
-          </p>
-          <div className="mt-5 inline-flex rounded-lg border border-[#4ED0FF] px-3 py-2 text-sm font-semibold text-[#0a2f40] transition group-hover:bg-[#eefbff]">
-            Open Activity
-          </div>
-        </Link>
+        
 
         <Link
           to="/activities/speaking"
           className="group rounded-2xl border border-[#dcefff] bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-[#4ED0FF] hover:shadow-md sm:p-7"
         >
           <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-[#2979FF]">
-            Activity 03
+            Activity 02
           </p>
           <h2 className="mb-2 text-2xl font-bold text-[#5A4DD5]">Speaking Practice</h2>
           <p className="text-base text-[#6E7382]">
             🎤 Speech-to-text and professional sentence feedback.
+          </p>
+          <div className="mt-5 inline-flex rounded-lg border border-[#4ED0FF] px-3 py-2 text-sm font-semibold text-[#0a2f40] transition group-hover:bg-[#eefbff]">
+            Open Activity
+          </div>
+        </Link>
+        <Link
+          to="/chat"
+          className="group rounded-2xl border border-[#dcefff] bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-[#4ED0FF] hover:shadow-md sm:p-7"
+        >
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-[#2979FF]">
+            Activity 03
+          </p>
+          <h2 className="mb-2 text-2xl font-bold text-[#5A4DD5]">Writing Tutor</h2>
+          <p className="text-base text-[#6E7382]">
+           Get grammar fixes and natural ways to say things.
+          </p>
+          <div className="mt-5 inline-flex rounded-lg border border-[#4ED0FF] px-3 py-2 text-sm font-semibold text-[#0a2f40] transition group-hover:bg-[#eefbff]">
+            Open Activity
+          </div>
+        </Link>
+        <Link
+          to="/activities/reading"
+          className="group rounded-2xl border border-[#dcefff] bg-white p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-[#4ED0FF] hover:shadow-md sm:p-7"
+        >
+          <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-[#2979FF]">
+            Activity 04
+          </p>
+          <h2 className="mb-2 text-2xl font-bold text-[#5A4DD5]">📖 Reading + Comprehension</h2>
+          <p className="text-base text-[#6E7382]">
+            Short article and multiple-choice comprehension questions.
           </p>
           <div className="mt-5 inline-flex rounded-lg border border-[#4ED0FF] px-3 py-2 text-sm font-semibold text-[#0a2f40] transition group-hover:bg-[#eefbff]">
             Open Activity

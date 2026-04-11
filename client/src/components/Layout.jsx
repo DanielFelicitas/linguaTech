@@ -4,7 +4,6 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 const navItems = [
   { to: '/', label: 'Home' },
   { to: '/activities', label: 'Activities' },
-  { to: '/chat', label: 'Chat Tutor' },
   { to: '/about', label: 'About Us' },
   { to: '/contact', label: 'Contact' },
 ]
