@@ -6,7 +6,7 @@ function ChatBot() {
     {
       role: 'assistant',
       content:
-        'Hi! Paste a sentence or ask how to say something in English. I will help with grammar and natural phrasing.',
+        `Hi! Share a sentence or ask how to express something in English—I’ll help with grammar, vocabulary, and word meanings.`,
     },
   ])
   const [input, setInput] = useState('')
