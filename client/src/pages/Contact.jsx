@@ -55,6 +55,13 @@ const contactMembers = [
     email: 'Sandaratomenio50@gmail.com',
     photo: '/contact-photos/SANDARA C. TOMENIO .jpeg',
   },
+  {
+    name: ' MOTA, XYZA A.',
+    course: 'Bachelor of Secondary Education',
+    major: 'Major in English',
+    email: 'xyzamota@gmail.com',
+    photo: '/contact-photos/Xyza.jpeg',
+  },
 ]
 
 function Contact() {
